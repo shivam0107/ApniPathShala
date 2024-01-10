@@ -1,7 +1,7 @@
 const SubSection = require("../models/SubSection");
 const Section = require("../models/Section");
-const uploadImageToCloudinary = require("../utils");
-const { findByIdAndDelete } = require("../models/Course");
+const {uploadImageToCloudinary }= require("../utils/imageUploader");
+const Course = require("../models/Course");
 require("dotenv").config();
 
 //create subSection
@@ -37,7 +37,7 @@ exports.createSubSection = async (req, res) => {
       });
       //insert subsection into db
 
-      const updateSubsection = await Section.findByIdAndUpdate(
+      const updatedSection = await Section.findByIdAndUpdate(
         sectionId,
         {
           $push: {
@@ -50,13 +50,14 @@ exports.createSubSection = async (req, res) => {
 
         //return res
         return res.status(200).json({
-            success: true,
-            message:"sub section creates successfully"
-        })
+          success: true,
+          message: "sub section creates successfully",
+          Data: updatedSection,
+        });
     } catch (error) {
         return res.status(500).json({
-          success: true,
-          message: console.log("error while creating subSection" , message.error)
+          success: false,
+          message: console.log("error while creating subSection" , error)
         });
     }
  
@@ -70,32 +71,49 @@ exports.createSubSection = async (req, res) => {
 exports.updateSubSection = async (req, res) => {
   try {
     //fetch data
-    const { SubSectionId, title, description, timeDuration } = req.body;
+    const { SubSectionId, title, description} = req.body;
 
-    //validate
-    if (!SubSectionId || !title || !description || timeDuration) {
+    //fetch subSection details
+    const subSection = await SubSection.findById(SubSectionId);
+
+    if (!subSection) {
       return res.status(400).json({
         success: false,
-        message: "error while fetching data",
-      });
+        message:"SubSection not Found",
+      })
     }
 
-    //update entry
+    console.log("title: ", title);
+    if (title) {
+      subSection.title = title;
+    }
 
-    const updatedSubSection = await SubSection.findByIdAndUpdate(
-      SubSectionId,
-      {
-        title: title,
-        description: description,
-        timeDuration: timeDuration,
-      },
-      { new: true }
-    );
+    console.log("title: " ,description);
+
+    if (description) {
+      subSection.description = description;
+    }
+
+    if (req.files && req.files.videoFile !== undefined) {
+      const video = req.files.videoFile;
+      const uploadDetails = await uploadImageToCloudinary(
+        video,
+        process.env.FOLDER_NAME
+      );
+
+      subSection.videoUrl = uploadDetails.secure_url;
+      subSection.timeDuration = `${uploadDetails.duration}`
+    }
+
+
+    //save into db
+    await subSection.save();
 
       //return res
       return res.status(200).json({
         success: true,
         message: "sub section updated successfully",
+        Data:subSection
       });
 
   } catch (error) {

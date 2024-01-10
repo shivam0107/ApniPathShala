@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-  fisrtName: {
+  firstName: {
     type: String,
     required: true,
     trim: true,
@@ -20,10 +20,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  confirmPassword: {
-    type: String,
-    
-  },
   accountType: {
     type: String,
     enum: ["Admin", "Student", "Instructor"],
@@ -34,7 +30,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     ref: "Profile",
   },
-  cources: [
+  courses: [
     {
       type: mongoose.Schema.Types.ObjectId,
       required: true,

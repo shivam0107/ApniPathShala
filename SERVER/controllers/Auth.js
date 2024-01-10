@@ -5,6 +5,8 @@ const bcrypt = require("bcrypt");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const mailSender = require("../utils/mailSender");
+const Profile = require("../models/Profile")
+
 
 //send otp
 exports.sendOTP = async (req, res) => {
@@ -56,6 +58,7 @@ exports.sendOTP = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "otp sent successfully",
+      OTP:otp
     });
   } catch (error) {
     console.log(error);
@@ -124,13 +127,15 @@ exports.signUp = async (req, res) => {
     // SORT otp in descending order based on created at Limit(1) select only one document
     console.log(recentOtp);
 
+
+
     //validate otp
-    if (recentOtp.length == 0) {
+    if (recentOtp.length === 0) {
       return res.status(400).json({
         success: false,
         message: "Otp not found",
       });
-    } else if (recentOtp.otp !== otp) {
+    } else if (otp !== recentOtp[0].otp) {
       //invalid otp
       return res.status(400).json({
         success: false,
@@ -150,14 +155,13 @@ exports.signUp = async (req, res) => {
     });
 
     const user = await User.create({
-      fisrtName,
+      firstName,
       lastName,
       email,
-      password,
-      confirmPassword,
-      accountType,
+      password:hashedPassword,
+      accountType:accountType,
       contactNumber,
-      additionalDetail: profileDetails._id,
+      additionalDetails: profileDetails._id,
       image: `https://api.dicebear.com/5.x/initials/svg?seed=${firstName} ${lastName}`,
     });
 
@@ -192,7 +196,7 @@ exports.login = async (req, res) => {
     }
     //user check does exist or not
 
-    const user = User.findOne({ email }).populate("additionalDetails");
+    const user = await User.findOne({ email }).populate("additionalDetails");
 
     if (!user) {
       return res.status(401).json({
@@ -202,43 +206,45 @@ exports.login = async (req, res) => {
     }
 
     //generate jwt token and match password
+    console.log("user" , user);
+    console.log("password is this: ", password);
+    console.log("hashed password is this: ",user.password);
 
-    if (await bcrypt.compare(password, user.password)) {
-      const payload = {
-        email: user.email,
-        id: user._id,
-        accountType: user.accountType,
-      };
-      const token = jwt.sign(payload, process.env.JWT_SECRET, {
-        expiresIn: "2h",
-      });
-
-      user.token = token;
-      user.password = undefined;
-
-      //create cookie
-
-      const options = {
-        expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
-        httpOnly: true,
-      };
-
-      res.cookie("token", token, options).status(200).json({
-        success: true,
-        token,
-        user,
-        message: "Logged in successfully",
-      });
-    } else {
-      return res.status(400).json({
-        success: false,
-        message: "Incorrect Password Please fill correct password",
-      });
+if (await bcrypt.compare(password , user.password)) {
+  const token = jwt.sign(
+    { email: user.email, id: user._id, accountType: user.accountType },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "24h",
     }
+  );
+
+  user.token = token;
+  user.password = undefined;
+
+  //create cookie
+
+  const options = {
+    expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+  };
+
+  res.cookie("token", token, options).status(200).json({
+    success: true,
+    token,
+    user,
+    message: "Logged in successfully",
+  });
+} else {
+  return res.status(400).json({
+    success: false,
+    message: "Incorrect Password Please fill correct password",
+  });
+}
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: console.log("Error while login", message.error),
+      message: console.log("Error while login" , error),
     });
   }
 };
@@ -247,7 +253,7 @@ exports.login = async (req, res) => {
 exports.changePassword = async (req, res) => {
   try {
     //get data from req body
-    
+
     //get oldPassword , newpassword , confirmNewPassword
     const { email, password, newPassword, confirmPassword } = req.body;
 
@@ -294,14 +300,12 @@ exports.changePassword = async (req, res) => {
       { email: email },
       { password: newPassword },
       {
-        new:true
+        new: true,
       }
-
     );
 
     //send email - password updated
     await mailSender(
-      
       email,
       "Password change",
       `Your password has been changed ${response.password}`
@@ -311,8 +315,8 @@ exports.changePassword = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "password change successful",
-      data:response
-    })
+      data: response,
+    });
   } catch (error) {
     return res.status(500).json({
       success: false,
