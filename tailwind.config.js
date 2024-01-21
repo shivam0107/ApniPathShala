@@ -2,6 +2,9 @@
 module.exports = {
   content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
+    boxShadow: {
+      "3xl": "0 35px 60px -15px rgba(0, 0, 0, 0.3)",
+    },
     fontFamily: {
       inter: ["Inter", "sans-serif"],
       "edu-sa": ["Edu SA Beginner", "cursive"],
@@ -125,6 +128,9 @@ module.exports = {
       },
     },
     extend: {
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+      },
       maxWidth: {
         maxContent: "1260px",
         maxContentTab: "650px",
