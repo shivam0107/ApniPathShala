@@ -5,6 +5,7 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.0.1",
     "concurrently": "^8.2.2",
+    "local-storage": "^2.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.0.0",
