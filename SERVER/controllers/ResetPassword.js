@@ -11,6 +11,7 @@ exports.resetPasswordToken = async (req, res) => {
   try {
     const email = req.body.email;
     const user = await User.findOne({ email: email });
+    console.log(  "email", email);
     if (!user) {
       return res.json({
         success: false,
@@ -37,10 +38,9 @@ exports.resetPasswordToken = async (req, res) => {
       `Your Link for email verification is ${url}. Please click this url to reset your password.`
     );
 
-    res.json({
+    return res.json({
       success: true,
-      message:
-        "Email Sent Successfully, Please Check Your Email to Continue Further",
+      message:"Email Sent Successfully, Please Check Your Email to Continue Further",
     });
   } catch (error) {
     return res.json({

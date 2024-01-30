@@ -1,45 +1,40 @@
 import React from "react";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { useState } from "react";
-import { toast } from "react-toastify";
+import {toast} from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import countryCode from '../../../data/countrycode.json'
+import countryCode from "../../../data/countrycode.json";
+import { ACCOUNT_TYPE } from "../../../utils";
+import { setSignupData } from "../../../slices/authenticationSlice";
+import { sendOtp } from "../../../services/operations/authAPI";
+import { useDispatch } from "react-redux";
+import Tab from "../../common/Tab";
 
-import Select from "react-dropdown-select";
+export const SignupForm = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  //student or instructor
 
-export const SignupForm = ({ setIsLoggedIn }) => {
+  const [accountType, SetAccountType] = useState(ACCOUNT_TYPE.STUDENT);
   const [formData, setFormData] = useState({
-    FirstName: "",
-    LastName: "",
+    firstName: "",
+    lastName: "",
     email: "",
     password: "",
     confirmPassword: "",
-    phoneNumber:""
+    phoneNumber: "",
   });
 
-  const countries = countryCode.map((ctr, index) => (
-    ctr.country
-  ))
-
-
-  const navigate = useNavigate();
-
   const [showPassword, setShowPassword] = useState(false);
+
   const [showConfirmPassword, setshowConfirmPassword] = useState(false);
-  const [AccountType, SetAccountType] = useState("student");
-
-  const [country, setCountry] = useState();
-  const [ctrCode, setCtrCode] = useState("+91");
-
-  function handleOnchange(event) {
-    setCountry(event.target.value)
-   
-      setCtrCode(countryCode.find(ctr => ctr.country ===  event.target.value).code)
-  }
-
-    console.log("ctr code" , ctrCode);
 
 
+  const { firstName, lastName, email, password, confirmPassword } = formData;
+
+  console.log("email" , formData );
+
+  //Handle input feilds, when some value change
   function changeHandler(event) {
     setFormData((prev) => ({
       ...prev,
@@ -47,57 +42,80 @@ export const SignupForm = ({ setIsLoggedIn }) => {
     }));
   }
 
-  function submitHandler(event) {
-    event.preventDefault();
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("password do not match");
+  // console.log("Form data" , formData);
+
+  // Handle Form Submission
+  const handleOnSubmit = (e) => {
+    console.log("submitting form data...");
+    e.preventDefault();
+
+    if (password !== confirmPassword) {
+      toast.error("Passwords Do Not Match");
       return;
     }
-
-    setIsLoggedIn(true);
-    toast.success("Account created");
-    const accountData = {
+    const signupData = {
       ...formData,
+      accountType,
     };
 
-    const finalData = {
-      ...accountData,
-      AccountType,
-    };
+    console.log("signup data"  , signupData);
 
-    console.log("printing final account data");
-    console.log(finalData);
+    // Setting signup data to state
+    // To be used after otp verification
+    dispatch(setSignupData(signupData));
 
-    navigate("/dashboard");
+    // Send OTP to user for verification
+    dispatch(sendOtp(email, navigate));
+
+    // Reset
+    setFormData({
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    });
+
+    SetAccountType(ACCOUNT_TYPE.STUDENT);
+  };
+
+  // data to pass to Tab component
+  const tabData = [
+    {
+      id: 1,
+      tabName: "Student",
+      type: ACCOUNT_TYPE.STUDENT,
+    },
+    {
+      id: 2,
+      tabName: "Instructor",
+      type: ACCOUNT_TYPE.INSTRUCTOR,
+    },
+  ];
+
+
+
+  const countries = countryCode.map((ctr, index) => ctr.country);
+
+  const [country, setCountry] = useState();
+  const [ctrCode, setCtrCode] = useState("+91");
+
+  function handleOnchange(event) {
+    setCountry(event.target.value);
+
+    setCtrCode(
+      countryCode.find((ctr) => ctr.country === event.target.value).code
+    );
   }
+
+  // console.log("ctr code", ctrCode);
 
   return (
     <div>
       {/* Student-instructor-tab */}
-      <div className="flex bg-richblack-700 p-1 gap-x-1 my-6 rounded-full max-w-max">
-        <button
-          className={`${
-            AccountType === "student"
-              ? "bg-richblack-900 text-richblack-5"
-              : "bg-transparent text-richblack-25 prevent"
-          } py-2 px-5 rounded-full transition-all duration-200 `}
-          onClick={() => SetAccountType("student")}
-        >
-          Student
-        </button>
-        <button
-          className={`${
-            AccountType === "Instructor"
-              ? "bg-richblack-900 text-richblack-5"
-              : "bg-transparent text-richblack-25 prevent"
-          } py-2 px-5 rounded-full transition-all duration-200 `}
-          onClick={() => SetAccountType("Instructor")}
-        >
-          Instructor
-        </button>
-      </div>
+      <Tab tabData={tabData} field={accountType} setField={SetAccountType} />
 
-      <form onSubmit={submitHandler}>
+      <form onSubmit={handleOnSubmit}>
         {/* first name - last name */}
         <div className="flex justify-between w-full mt-4">
           <lable>
@@ -107,10 +125,10 @@ export const SignupForm = ({ setIsLoggedIn }) => {
             <input
               required
               type="text"
-              name="FirstName"
+              name="firstName"
               onChange={changeHandler}
               placeholder="Enter First Name"
-              value={formData.FirstName}
+              value={formData.firstName}
               className="bg-richblack-800 rounded-[0.5rem] text-richblack-25 prevent w-full p-[12px]"
             />
           </lable>
@@ -122,10 +140,10 @@ export const SignupForm = ({ setIsLoggedIn }) => {
             <input
               required
               type="text"
-              name="LastName"
+              name="lastName"
               onChange={changeHandler}
               placeholder="Enter Last Name"
-              value={formData.LastName}
+              value={formData.lastName}
               className="bg-richblack-800 rounded-[0.5rem] text-richblack-25 prevent w-full p-[12px]"
             />
           </lable>
@@ -178,7 +196,6 @@ export const SignupForm = ({ setIsLoggedIn }) => {
                   Phone Number <sup className=" text-[#EF476F] ">*</sup>
                 </p>
                 <input
-                  required
                   type="tel"
                   name="phoneNumber"
                   onChange={changeHandler}
@@ -248,7 +265,7 @@ export const SignupForm = ({ setIsLoggedIn }) => {
         </div>
         <div className="mt-[20px]"></div>
 
-        <button className="bg-[#FFD60A] w-full rounded-[8px] font-medium text-slate-800 px-[12px] py-[8px] mt-6">
+        <button type='submit' className="bg-[#FFD60A] w-full rounded-[8px] font-medium text-slate-800 px-[12px] py-[8px] transition-all duration-200  hover:scale-95 mt-6">
           create Account
         </button>
       </form>

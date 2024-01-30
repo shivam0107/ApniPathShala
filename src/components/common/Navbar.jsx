@@ -11,16 +11,16 @@ import { categories } from '../../services/apis'
 import { IoIosArrowDropdownCircle } from "react-icons/io";
 
 
-const sublinks = [
-  {
-    title: "python",
-    link:"catalog/python"
-  },
-  {
-    title: "web dev",
-    link:"catalog/webdev"
-  }
-]
+// const sublinks = [
+//   {
+//     title: "python",
+//     link:"catalog/python"
+//   },
+//   {
+//     title: "web dev",
+//     link:"catalog/webdev"
+//   }
+// ]
 
 function Navbar() {
 
@@ -30,26 +30,31 @@ function Navbar() {
   const location = useLocation();
 
 
-  // const [subLinks, setSubLinks] = useState([]);
+  const [subLinks, setSubLinks] = useState([]);
+  // console.log("printing" , subLinks);
 
-  // const fetchSublinks = async () => {
-  //     try {
-  //       const result = await apiConnector("GET", categories.CATEGORIES_API)
-  //       console.log("Printing sublink result: " , result );
-  //       setSubLinks(result.data.data)
-  //     } catch (error) {
-  //       console.log("could not fetch the catalog list" , error);
-  //     }
-  //   }
+  const fetchSublinks = async () => {
+      try {
+        const result = await apiConnector("GET", categories.CATEGORIES_API)
+        // console.log("Printing sublink result: " , result );
+        setSubLinks(result.data.allCategory);
+      } catch (error) {
+        console.log("could not fetch the catalog list" , error);
+      }
+    }
 
-  // useEffect(() => {
+  useEffect(() => {
 
-  //   fetchSublinks();
+    fetchSublinks();
 
-  // } , [])
+  } , [])
 
 
-    const matchRoute = (route) => {
+    // console.log( "location pathnae:" , location.pathname);
+    
+
+  const matchRoute = (route) => {
+      // console.log( "match route" , route);
         return matchPath({ path: route }, location.pathname);
     }
 
@@ -83,14 +88,14 @@ function Navbar() {
                       >
                         <div className="absolute left-[50%] top-0 -z-10 h-6 w-6 translate-x-[80%] translate-y-[-40%] rotate-45 select-none rounded bg-richblack-5 "></div>
 
-                        {sublinks.length ? (
-                          sublinks.map((sublink, index) => (
+                        {subLinks.length? (
+                          subLinks.map((sublink, index) => (
                             <Link
                               to={sublink.link}
                               key={index}
                               className="rounded-lg bg-transparent py-4 pl-4 hover:bg-richblack-50"
                             >
-                              <p>{sublink.title}</p>
+                              <p>{sublink.name}</p>
                             </Link>
                           ))
                         ) : (
