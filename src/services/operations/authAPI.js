@@ -109,6 +109,10 @@ export function login(email, password, navigate) {
 
       //set token to localstorage
       localStorage.setItem("token", JSON.stringify(response.data.token));
+     
+      //set user to localstorage
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+      
       navigate("/dashboard/my-profile");
     } catch (error) {
       console.log("LOGIN API ERROR............", error);

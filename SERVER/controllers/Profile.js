@@ -7,22 +7,35 @@ exports.updateProfile = async (req, res) => {
   try {
     //fetch data
 
-    const { dateOfBirth = "", about = "", contactNumber, gender } = req.body;
+    const {
+      firstName = "",
+      lastName = "",
+      dateOfBirth = "",
+      about = "",
+      contactNumber = "",
+      gender = "",
+    } = req.body;
 
     //get user id
     const userId = req.user.id;
     //validate
-    if (!contactNumber || !gender) {
-      return res.status(400).json({
-        success: false,
-        message: "all feilds are required",
-      });
-    }
+    // if (!contactNumber || !gender) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "all feilds are required",
+    //   });
+    // }
 
     //find profile
-    const userDetails = await User.findById({ _id:userId });
+    const userDetails = await User.findById({ _id: userId });
     const profileId = userDetails.additionalDetails;
     const profileDetails = await Profile.findById(profileId);
+
+    const user = await User.findByIdAndUpdate(userId, {
+      firstName,
+      lastName,
+    });
+    await user.save();
 
     //update profile
     profileDetails.dateOfBirth = dateOfBirth;
@@ -32,11 +45,16 @@ exports.updateProfile = async (req, res) => {
 
     await profileDetails.save();
 
+    // Find the updated user details
+    const updatedUserDetails = await User.findById(userId)
+      .populate("additionalDetails")
+      .exec();
+
     //return resonse
     return res.status(200).json({
       success: true,
       message: "profile updated successfully",
-      profileDetails,
+      updatedUserDetails,
     });
   } catch (error) {
     return res.status(500).json({
@@ -142,7 +160,7 @@ exports.updateDisplayPicture = async (req, res) => {
     );
 
     //return res
-    res.send({
+    return res.status(200).json({
       success: true,
       message: "image updated successfully",
       data:updatedProfile

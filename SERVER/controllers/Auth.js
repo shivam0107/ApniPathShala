@@ -6,7 +6,7 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const mailSender = require("../utils/mailSender");
 const Profile = require("../models/Profile")
-
+const  {passwordUpdated} = require("../mail/templates/passwordUpdate")
 
 //send otp
 exports.sendOTP = async (req, res) => {
@@ -252,75 +252,64 @@ if (await bcrypt.compare(password , user.password)) {
 //change password : HomeWork
 exports.changePassword = async (req, res) => {
   try {
-    //get data from req body
+    // Get user data from req.user
+    const userDetails = await User.findById(req.user.id);
 
-    //get oldPassword , newpassword , confirmNewPassword
-    const { email, password, newPassword, confirmPassword } = req.body;
+    // Get old password, new password, and confirm new password from req.body
+    const { oldPassword, newPassword } = req.body;
 
-    //validation
-    if (!email || !password || !newPassword || !confirmPassword) {
-      return res.status(401).json({
-        success: false,
-        message: console.log("Please fill the correct details", message.error),
-      });
+    // Validate old password
+    const isPasswordMatch = await bcrypt.compare(
+      oldPassword,
+      userDetails.password
+    );
+    if (!isPasswordMatch) {
+      // If old password does not match, return a 401 (Unauthorized) error
+      return res
+        .status(401)
+        .json({ success: false, message: "The password is incorrect" });
     }
 
-    if (newPassword !== confirmPassword) {
-      return res.status(400).json({
-        success: false,
-        message: console.log(
-          "password and confirm password not matching",
-          message.error
-        ),
-      });
-    }
-    //update pssword in db
-    const user = await User.findOne({ email });
-
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: console.log("user is not registered", message.error),
-      });
-    }
-
-    if (user.password !== password) {
-      return res.status(400).json({
-        success: false,
-        message: console.log(
-          "Please enter your correct password",
-          message.error
-        ),
-      });
-    }
-
-    const hashPassword = bcrypt.hash(newPassword, confirmPassword);
-
-    const response = await User.findOneAndUpdate(
-      { email: email },
-      { password: newPassword },
-      {
-        new: true,
-      }
+    // Update password
+    const encryptedPassword = await bcrypt.hash(newPassword, 10);
+    const updatedUserDetails = await User.findByIdAndUpdate(
+      req.user.id,
+      { password: encryptedPassword },
+      { new: true }
     );
 
-    //send email - password updated
-    await mailSender(
-      email,
-      "Password change",
-      `Your password has been changed ${response.password}`
-    );
+    // Send notification email
+    try {
+      const emailResponse = await mailSender(
+        updatedUserDetails.email,
+        "Password for your account has been updated",
+        passwordUpdated(
+          updatedUserDetails.email,
+          `Password updated successfully for ${updatedUserDetails.firstName} ${updatedUserDetails.lastName}`
+        )
+      );
+      console.log("Email sent successfully:", emailResponse.response);
+    } catch (error) {
+      // If there's an error sending the email, log the error and return a 500 (Internal Server Error) error
+      console.error("Error occurred while sending email:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Error occurred while sending email",
+        error: error.message,
+      });
+    }
 
-    //return response
-    return res.status(200).json({
-      success: true,
-      message: "password change successful",
-      data: response,
-    });
+    // Return success response
+    return res
+      .status(200)
+      .json({ success: true, message: "Password updated successfully" });
   } catch (error) {
+    // If there's an error updating the password, log the error and return a 500 (Internal Server Error) error
+    console.error("Error occurred while updating password:", error);
     return res.status(500).json({
       success: false,
-      message: "Error while changing your password",
+      message: "Error occurred while updating password",
+      error: error.message,
     });
   }
 };
