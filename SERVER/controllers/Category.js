@@ -64,7 +64,7 @@ exports.showAllCategories = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({
-      success: true,
+      success: false,
       message: `error while geting all category :  ${error.message}`,
     });
   }

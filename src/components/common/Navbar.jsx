@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from 'react'
-import { Link, matchPath } from 'react-router-dom'
-import logo from '../../assets/Logo/Logo-Full-Light.png'
-import { NavbarLinks } from '../../data/navbar-links'
-import { useLocation } from 'react-router-dom'
-import { useSelector } from 'react-redux'
+import React, { useEffect, useState } from "react";
+import { Link, matchPath } from "react-router-dom";
+import logo from "../../assets/Logo/Logo-Full-Light.png";
+import { NavbarLinks } from "../../data/navbar-links";
+import { useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { FaShoppingCart } from "react-icons/fa";
-import ProfileDropDown from '../core/Auth/ProfileDropDown'
-import { apiConnector } from '../../services/apiconnector'
-import { categories } from '../../services/apis'
+import ProfileDropDown from "../core/Auth/ProfileDropDown";
+import { apiConnector } from "../../services/apiconnector";
+import { categories } from "../../services/apis";
 import { IoIosArrowDropdownCircle } from "react-icons/io";
-
 
 // const sublinks = [
 //   {
@@ -23,40 +22,34 @@ import { IoIosArrowDropdownCircle } from "react-icons/io";
 // ]
 
 function Navbar() {
-
   const { token } = useSelector((state) => state.auth);
   const { user } = useSelector((state) => state.profile);
   const { totalItems } = useSelector((state) => state.cart);
   const location = useLocation();
 
-
   const [subLinks, setSubLinks] = useState([]);
   // console.log("printing" , subLinks);
 
   const fetchSublinks = async () => {
-      try {
-        const result = await apiConnector("GET", categories.CATEGORIES_API)
-        // console.log("Printing sublink result: " , result );
-        setSubLinks(result.data.allCategory);
-      } catch (error) {
-        console.log("could not fetch the catalog list" , error);
-      }
+    try {
+      const result = await apiConnector("GET", categories.CATEGORIES_API);
+      // console.log("Printing sublink result: " , result );
+      setSubLinks(result.data.allCategory);
+    } catch (error) {
+      console.log("could not fetch the catalog list", error);
     }
+  };
 
   useEffect(() => {
-
     fetchSublinks();
+  }, []);
 
-  } , [])
-
-
-    // console.log( "location pathnae:" , location.pathname);
-    
+  // console.log( "location pathnae:" , location.pathname);
 
   const matchRoute = (route) => {
-      // console.log( "match route" , route);
-        return matchPath({ path: route }, location.pathname);
-    }
+    // console.log( "match route" , route);
+    return matchPath({ path: route }, location.pathname);
+  };
 
   return (
     <div className="flex h-14 items-center justify-center border-b-[1px] border-b-richblack-700">
@@ -88,7 +81,7 @@ function Navbar() {
                       >
                         <div className="absolute left-[50%] top-0 -z-10 h-6 w-6 translate-x-[80%] translate-y-[-40%] rotate-45 select-none rounded bg-richblack-5 "></div>
 
-                        {subLinks.length? (
+                        {subLinks.length ? (
                           subLinks.map((sublink, index) => (
                             <Link
                               to={sublink.link}
@@ -125,7 +118,7 @@ function Navbar() {
         {/* login/signup/dashboard*/}
 
         <div className="flex gap-4 items-center">
-          {user && user?.accountType != "Instructor" && (
+          {user && user?.accountType !== "Instructor" && (
             <Link to="/dashboard/cart" className="relative">
               <FaShoppingCart className="text-white" />
               {totalItems > 0 && <span>{totalItems}</span>}
@@ -152,4 +145,4 @@ function Navbar() {
   );
 }
 
-export default Navbar
+export default Navbar;

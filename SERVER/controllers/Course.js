@@ -15,15 +15,21 @@ exports.createCourse = async (req, res) => {
       courseName,
       category,
       status,
-      instructions,
       courseDescription,
       whatYouWillLearn,
       price,
-      tag,
+      tag: _tag,
+      instructions: _instructions,
     } = req.body;
 
     //get thumbnail
     const thumbnail = req.files.thumbnailImage;
+
+    console.log("price", typeof(price));
+
+    // // Convert the tag and instructions from stringified Array to Array
+    const tag = JSON.parse(_tag);
+    const instructions = JSON.parse(_instructions);
 
     //validation
     if (
@@ -31,9 +37,10 @@ exports.createCourse = async (req, res) => {
       !courseDescription ||
       !whatYouWillLearn ||
       !price ||
-      !tag ||
+      !tag.length ||
       !category ||
-      !thumbnail
+      !thumbnail ||
+      !instructions.length
     ) {
       return res.status(400).json({
         success: false,
@@ -63,7 +70,7 @@ exports.createCourse = async (req, res) => {
     }
 
     //check given tag is valid or not
-    const categoryDetails = await Category.findById(category);
+    const categoryDetails = await Category.findOne({ name: category });
     if (!categoryDetails) {
       return res.status(404).json({
         success: false,
@@ -87,6 +94,8 @@ exports.createCourse = async (req, res) => {
       category: categoryDetails._id,
       thumbnail: thumbnailImage.secure_url,
       status: status,
+      instructions,
+      tag,
       price,
     });
 
@@ -121,25 +130,16 @@ exports.createCourse = async (req, res) => {
       data: newCourse,
     });
   } catch (error) {
-    console.log("Error: ",error.message);
-    return res.status(200).json({
+    console.log("Error: ", error.message);
+    return res.status(500).json({
       success: false,
-      message: "error while creating new course",
-      Error: console.log(error)
+      message: `error while creating new course: ${error.message} `,
+      Error: console.log(error),
     });
   }
 };
 
 //get all cource handeler function
-
-
-
-
-
-
-
-
-
 
 exports.getAllCourses = async (req, res) => {
   try {
@@ -189,7 +189,7 @@ exports.getCourseDetails = async (req, res) => {
 
     //find course details
 
-    const courseDetails = await Course.findById({_id: courseId })
+    const courseDetails = await Course.findById({ _id: courseId })
       .populate({
         path: "instructor",
         populate: {
@@ -219,7 +219,7 @@ exports.getCourseDetails = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "course details fetched successfully",
-      Data:courseDetails
+      Data: courseDetails,
     });
   } catch (error) {
     return res.status(500).json({
