@@ -60,7 +60,7 @@ const CourseBuilderForm = () => {
 
     if (result) {
       dispacth(setCourse(result));
-      setEditCourse(null);
+       setEditSectionName(null);
       setValue("sectionName", "");
     }
 

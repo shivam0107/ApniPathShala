@@ -8,7 +8,10 @@ import { FaPlus } from "react-icons/fa";
 import SubSectionModal from "./SubSectionModal";
 import ConfirmationModal from "../../../../common/ConfirmationModal";
 import { setCourse } from "../../../../../slices/courseSlice";
-import { deleteSection , deleteSubSection } from "../../../../../services/operations/courseDetailsAPI";
+import {
+  deleteSection,
+  deleteSubSection,
+} from "../../../../../services/operations/courseDetailsAPI";
 
 const NestedView = ({ handelEditSectionName }) => {
   const { course } = useSelector((state) => state.course);
@@ -28,23 +31,24 @@ const NestedView = ({ handelEditSectionName }) => {
       {
         sectionId,
         courseId: course._id,
-        token  
-      });
-    
-       if (result) {
-         dispatch(setCourse(result));
+      },
+      token
+    );
+
+    if (result) {
+      dispatch(setCourse(result));
     }
     setConfirmationModal(null);
-
-
   };
 
-  const handelDeleteSubSection = async(subSectionId, sectionId) => {
-      const result = await deleteSubSection({
+  const handelDeleteSubSection = async (subSectionId, sectionId) => {
+    const result = await deleteSubSection(
+      {
         subSectionId,
         sectionId,
-        token,
-      });
+      },
+      token
+    );
 
     if (result) {
       // update the structure of course
@@ -54,12 +58,11 @@ const NestedView = ({ handelEditSectionName }) => {
       const updatedCourse = { ...course, courseContent: updatedCourseContent };
       dispatch(setCourse(updatedCourse));
     }
-      setConfirmationModal(null);
-
+    setConfirmationModal(null);
   };
 
   return (
-    <div className="text-white">
+    <div className="text-white ">
       <div
         className="rounded-lg bg-richblack-700 p-6 px-8 mt-5"
         id="nestedViewContainer"
@@ -101,7 +104,7 @@ const NestedView = ({ handelEditSectionName }) => {
               </div>
             </summary>
 
-            <div>
+            <div className="ml-8">
               {section?.subSection.map((data) => (
                 <div
                   key={data._id}
@@ -114,7 +117,10 @@ const NestedView = ({ handelEditSectionName }) => {
                       {data?.title}
                     </p>
                   </div>
-                  <div className="flex items-center gap-x-3">
+                  <div
+                    onClick={(e) => e.stopPropagation()}
+                    className="flex items-center gap-x-3"
+                  >
                     <button
                       className=""
                       onClick={() =>
@@ -144,7 +150,7 @@ const NestedView = ({ handelEditSectionName }) => {
               ))}
 
               <button
-                onClick={setAddSubSection(section._id)}
+                onClick={() => setAddSubSection(section._id)}
                 className="mt-4 flex items-center gap-x-2 text-yellow-25"
               >
                 Add Lecture
@@ -173,13 +179,13 @@ const NestedView = ({ handelEditSectionName }) => {
           edit={true}
         />
       ) : (
-        <div></div>
+        <></>
       )}
 
       {confirmationModal ? (
         <ConfirmationModal modalData={confirmationModal} />
       ) : (
-        ""
+        <></>
       )}
     </div>
   );
