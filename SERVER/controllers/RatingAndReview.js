@@ -1,12 +1,18 @@
 const RatingAndReview = require("../models/RatingAndReview");
 const User = require("../models/User");
 const Course = require("../models/Course");
+const { default: mongoose } = require("mongoose");
 
 exports.createRating = async (req, res) => {
   try {
     //fetch data
+      const userId = req.user.id;
     const { rating, review, courseId } = req.body;
-    const userId = req.user.id;
+  
+
+    // const CId = new mongoose.Types.ObjectId(courseId);
+
+    console.log("courseId in rating review", userId);
 
     //validate data
     if (!rating || !review) {
@@ -17,14 +23,14 @@ exports.createRating = async (req, res) => {
     }
 
     //check if user is enrolled or not
-    const courseDetails = await Course.findOne(
-      { _id: courseId },
-      {
-        studentEnrolled: { $elemMatch: { $eq: userId } },
-      }
-    );
+    const courseDetails = await Course.findOne({
+      _id: courseId,
+      studentEnrolled: { $elemMatch: { $eq: userId } },
+    });
+
+     console.log("courseId in rating review courseDetails", courseDetails);
     if (!courseDetails) {
-      return res.status(500).json({
+      return res.status(404).json({
         success: false,
         message: "user not enrolled in this course",
       });
@@ -55,7 +61,7 @@ exports.createRating = async (req, res) => {
     //update course with this rating and review
 
     const updatedCourseDetail = await Course.findByIdAndUpdate(
-      { courseId },
+      { _id: courseId },
       {
         $push: {
           ratingAndReview: ratingAndReviewDetails._id,
@@ -132,7 +138,7 @@ exports.getAverageRating = async (req, res) => {
 exports.getAllRating = async (req, res) => {
   try {
     const allReviews = await RatingAndReview.find({})
-      .sort({ rating: desc })
+      .sort({ rating: "desc" })
       .populate({
         path: "user",
         select: "firstName lastName email image",
@@ -141,13 +147,13 @@ exports.getAllRating = async (req, res) => {
         path: "course",
         select: "courseName",
       })
-          .exec();
-      
-      return res.status(200).json({
-          success: true,
-          message:"all reviews fetched successfully",
-      })
-      
+      .exec();
+
+    return res.status(200).json({
+      success: true,
+      message: "all reviews fetched successfully",
+      data:allReviews
+    });
   } catch (error) {
     return res.status(500).json({
       success: false,

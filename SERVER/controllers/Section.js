@@ -9,6 +9,9 @@ exports.createSection = async (req, res) => {
     // Extract the required properties from the request body
     const { sectionName, courseId } = req.body;
 
+    console.log("section Name" , sectionName);
+    console.log("CourseId", courseId);
+
     // Validate the input
     if (!sectionName || !courseId) {
       return res.status(400).json({

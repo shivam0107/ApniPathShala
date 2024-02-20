@@ -8,10 +8,9 @@ import FoundingStory from "../assets/Images/FoundingStory.png";
 import StatsComponents from "../components/core/AboutPage/StatsComponents";
 import LearningGrid from "../components/core/AboutPage/LearningGrid";
 import ContactFormSection from "../components/core/AboutPage/ContactFormSection";
-import Footer from '../components/common/Footer'
+import Footer from "../components/common/Footer";
+import ReviewSlider from "../components/common/ReviewSlider";
 const About = () => {
-  
-
   return (
     <div className=" ">
       {/* section 1 */}
@@ -121,16 +120,17 @@ const About = () => {
       </section>
 
       {/* section - 6 */}
-      <sectio>
-        <div className="text-white flex justify-center items-center text-4xl mb-5 ">
-          Review from other learnners
-          {/* review slider  */}
-        </div>
-      </sectio>
+      <div className="w-11/12 mx-auto max-w-maxContent flex flex-col items-center justify-between gap-8 bg-richblack-900 ">
+        <h2 className="text-center text-white text-4xl font-semibold mt-10">
+          review from Other Learners
+        </h2>
+        {/* review slider here */}
+        <ReviewSlider />
+      </div>
 
       {/* section - 7  -- Footer */}
       <section>
-        <Footer/>
+        <Footer />
       </section>
     </div>
   );

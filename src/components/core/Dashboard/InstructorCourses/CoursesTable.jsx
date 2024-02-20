@@ -13,11 +13,13 @@ import {
 import { setCourse } from "../../../../slices/courseSlice";
 import "react-super-responsive-table/dist/SuperResponsiveTableStyle.css";
 import { formatDate } from "../../../../services/formatDate";
+import { useNavigate } from "react-router-dom";
 
 const CoursesTable = ({ courses, setCourses }) => {
   const { token } = useSelector((state) => state.auth);
   const [loading, setLoading] = useState(false);
   const [confirmationModal, setConfirmationModal] = useState(null);
+  const navigate = useNavigate();
 
   const handelDeleteCourse = async (courseId) => {
     setLoading(true);
@@ -92,7 +94,12 @@ const CoursesTable = ({ courses, setCourses }) => {
                 <Td> 2hr 30min</Td>
                 <Td>₹{course?.price}</Td>
                 <Td className="space-x-3">
-                  <button disabled={loading}>
+                  <button
+                    onClick={() => {
+                      navigate(`/dashboard/edit-course/${course._id}`);
+                    }}
+                    disabled={loading}
+                  >
                     <CiEdit size={24} />
                   </button>
                   <button

@@ -36,10 +36,13 @@ const CourseInformationForm = () => {
 
   const [courseCategories, setCourseCategories] = useState([]);
 
+  console.log("course Categories" , courseCategories);
+
   useEffect(() => {
     const getCategories = async () => {
       setLoading(true);
       const categories = await fetchCourseCategories();
+      console.log("categories" , categories);
       if (categories.length > 0) {
         // console.log("categories", categories)
         setCourseCategories(categories);
@@ -63,9 +66,9 @@ const CourseInformationForm = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // if (loading) {
-  //   return <Spinner />;
-  // }
+  if (loading) {
+    return <Spinner />;
+  }
 
   // console.log("CourseCategory", courseCategories);
 

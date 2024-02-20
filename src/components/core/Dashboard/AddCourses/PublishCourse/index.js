@@ -7,74 +7,62 @@ import { resetCourseState, setStep } from "../../../../../slices/courseSlice";
 import { COURSE_STATUS } from "../../../../../utils";
 import { editCourseDetails } from "../../../../../services/operations/courseDetailsAPI";
 import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 const PublishCourse = () => {
-  const {
-    register,
-    setValue,
-    handleSubmit,
-    getValues,
-    formState: { errors, isSubmitSuccessful },
-  } = useForm();
+   const { register, handleSubmit, setValue, getValues } = useForm();
 
-  const { course } = useSelector((state) => state.course);
-  const { token } = useSelector((state) => state.auth);
+   const dispatch = useDispatch();
+   const navigate = useNavigate();
+   const { token } = useSelector((state) => state.auth);
+   const { course } = useSelector((state) => state.course);
+   const [loading, setLoading] = useState(false);
 
-  const [loading, setLoading] = useState(false);
-  const dispatch = useDispatch();
+   useEffect(() => {
+     if (course?.status === COURSE_STATUS.PUBLISHED) {
+       setValue("public", true);
+     }
+   }, []);
 
-  const goBack = () => {
-    dispatch(setStep(2));
-  };
+   const goBack = () => {
+     dispatch(setStep(2));
+   };
 
-  useEffect(() => {
-    if (course?.status === COURSE_STATUS.PUBLISHED) {
-      setValue("public", true);
-    }
-  }, []);
+   const goToCourses = () => {
+     dispatch(resetCourseState());
+     navigate("/dashboard/my-courses");
+   };
 
-  const goToCourses = () => {
-    dispatch(resetCourseState());
+   const handleCoursePublish = async () => {
+     // check if form has been updated or not
+     if (
+       (course?.status === COURSE_STATUS.PUBLISHED &&
+         getValues("public") === true) ||
+       (course?.status === COURSE_STATUS.DRAFT && getValues("public") === false)
+     ) {
+       // form has not been updated
+       // no need to make api call
+       goToCourses();
+       return;
+     }
+     const formData = new FormData();
+     formData.append("courseId", course._id);
+     const courseStatus = getValues("public")
+       ? COURSE_STATUS.PUBLISHED
+       : COURSE_STATUS.DRAFT;
+     formData.append("status", courseStatus);
+     setLoading(true);
+     const result = await editCourseDetails(formData, token);
+     if (result) {
+       goToCourses();
+     }
+     setLoading(false);
+   };
 
-    //navigate/dashboard/my-courses
-  };
-
-  const handelCodePublish = async () => {
-    if (
-      (course?.status === COURSE_STATUS.PUBLISHED &&
-        getValues("public") === true) ||
-      (course?.status === COURSE_STATUS.DRAFT && getValues("public") === false)
-    ) {
-      //no updation in form
-      //no need to make api call
-      goToCourses();
-      return;
-    }
-
-    //form update hua hai
-    const formData = new FormData();
-    formData.append("courseId", course._id);
-    const courseStatus = getValues("public")
-      ? COURSE_STATUS.PUBLISHED
-      : COURSE_STATUS.DRAFT;
-    formData.append("status", courseStatus);
-
-    setLoading(true);
-   
-    const result = await editCourseDetails(formData, token);
-
-
-    console.log("result", result);
-
-    if (result) {
-      goToCourses();
-    }
-    setLoading(false);
-  };
-
-  const onSubmit = (data) => {
-    handelCodePublish();
-  };
+   const onSubmit = (data) => {
+     // console.log(data)
+     handleCoursePublish();
+   };
 
   return (
     <div className=" text-white rounded-md border-[1px] bg-richblack-800 p-6 border-richblack-700">
@@ -105,7 +93,7 @@ const PublishCourse = () => {
             Back
           </button>
           <IconBtn
-            type="submit"
+          
             disabled={loading}
             text={"save Changes"}
           ></IconBtn>

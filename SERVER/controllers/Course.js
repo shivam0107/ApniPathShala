@@ -1,6 +1,8 @@
 const Course = require("../models/Course");
 const Section = require("../models/Section")
 const SubSection = require("../models/SubSection")
+const CourseProgress = require("../models/CourseProgress")
+const {convertSecondsToDuration} = require("../utils/secToDuration")
 
 const Category = require("../models/Category");
 const User = require("../models/User");
@@ -240,6 +242,7 @@ exports.getFullCourseDetails = async (req, res) => {
       },
     });
   } catch (error) {
+    console.log("error", error);
     return res.status(500).json({
       success: false,
       message: error.message,
@@ -280,8 +283,11 @@ exports.getInstructorCourses = async (req, res) => {
 exports.editCourse = async (req, res) => {
   try {
     const { courseId } = req.body
+    console.log("courseId" , courseId);
     const updates = req.body
-    const course = await Course.findById(courseId)
+    console.log("updated", updates);
+
+    const course = await Course.findById({_id:courseId})
 
     if (!course) {
       return res.status(404).json({ error: "Course not found" })
@@ -330,7 +336,7 @@ exports.editCourse = async (req, res) => {
       })
       .exec()
 
-    res.json({
+   return res.json({
       success: true,
       message: "Course updated successfully",
       data: updatedCourse,
@@ -339,7 +345,7 @@ exports.editCourse = async (req, res) => {
     console.error(error)
     res.status(500).json({
       success: false,
-      message: "Internal server error",
+      message: `Internal server error ${console.log(error)}`,
       error: error.message,
     })
   }
@@ -394,7 +400,7 @@ exports.getCourseDetails = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "course details fetched successfully",
-      Data: courseDetails,
+      data: courseDetails,
     });
   } catch (error) {
     return res.status(500).json({

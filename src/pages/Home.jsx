@@ -8,8 +8,8 @@ import CodeBlocks from "../components/core/HomePage/CodeBlocks";
 import TimelineSection from "../components/core/HomePage/TimelineSection";
 import LearningLanguageSection from "../components/core/HomePage/LearningLanguageSection";
 import InstructorSection from "../components/core/HomePage/InstructorSection";
-import code_blob1 from '../../src/assets/figma/Ellipse2.png'
-import code_blob2 from '../../src/assets/figma/ellips.png'
+import code_blob1 from "../../src/assets/figma/Ellipse2.png";
+import code_blob2 from "../../src/assets/figma/ellips.png";
 import Footer from "../components/common/Footer";
 import ReviewSlider from "../components/common/ReviewSlider";
 import ExploreMore from "../components/core/HomePage/ExploreMore";
@@ -105,12 +105,11 @@ function Home() {
           position={`  lg:flex-row-reverse  `}
           heading={
             <div className="text-4xl text-white font-semibold">
-              Unlock Your <HighLightText text={"Coding Potential "} />
-              With Our Online Courses
+              Start <HighLightText text={"coding in seconds"} />
             </div>
           }
           subheading={
-            "Our courses are designed and taught by industry experts who have years of experience in coding and are passionate about sharing their knowledge with you."
+            "Go ahead, give it a try. Our hands-on learning environment means you'll be writing real code from your very first lesson."
           }
           ctabtn1={{
             btnText: "Try it Yourself",
@@ -183,13 +182,10 @@ function Home() {
 
       <div className="w-11/12 mx-auto max-w-maxContent flex flex-col items-center justify-between gap-8 bg-richblack-900 ">
         <InstructorSection />
-        <h2 className="text-center text-4xl font-semibold mt-10">
+        <h2 className="text-center text-white text-4xl font-semibold mt-10">
           review from Other Learners
         </h2>
         {/* review slider here */}
-        <h1 className="text-center text-white text-4xl font-semibold mt-8">
-          Reviews from other learners
-        </h1>
         <ReviewSlider />
       </div>
 
